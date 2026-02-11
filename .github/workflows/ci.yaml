@@ -1,0 +1,25 @@
+name: ci
+on: pull_request
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+    env:
+      BATON_TOKEN: ${{ secrets.BATON_TOKEN }}
+      BATON_ENTERPRISES: benTest
+      BATON_INSTANCE_URL: https://github.com
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Install Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+      - name: Build baton-github-enterprise
+        run: go build ./cmd/baton-github-enterprise
+      - name: Grant/revoke
+        uses: ConductorOne/github-workflows/actions/sync-test@v2
+        with:
+          connector: ./baton-github-enterprise
+          baton-entitlement: 'repository:1155802013:maintain'
+          baton-principal: '203686556'
+          baton-principal-type: 'user'
