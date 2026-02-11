@@ -1,6 +1,6 @@
 module github.com/conductorone/baton-github-enterprise
 
-go 1.25.5
+go 1.25.2
 
 require (
 	github.com/conductorone/baton-github v0.2.7
