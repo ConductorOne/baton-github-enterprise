@@ -9,7 +9,6 @@ const (
 	GithubPersonalAccessTokenGroup = "personal-access-token-group"
 )
 
-// TODO (mb): Make sure we don't need field.WithRequired(true) for required fields.
 var (
 	accessTokenField = field.StringField(
 		"token",
