@@ -1,8 +1,5 @@
 package main
 
-
-package main
-
 import (
 	"context"
 
@@ -10,7 +7,7 @@ import (
 	"github.com/conductorone/baton-sdk/pkg/config"
 	"github.com/conductorone/baton-sdk/pkg/connectorrunner"
 
-	"github.com/conductorone/baton-github/pkg/connector"
+	"github.com/conductorone/baton-github-enterprise/pkg/connector"
 )
 
 var version = "dev"

@@ -6,5 +6,5 @@ import (
 )
 
 func main() {
-	config.Generate("github", cfg.Config)
+	config.Generate("githubEnterprise", cfg.Config)
 }

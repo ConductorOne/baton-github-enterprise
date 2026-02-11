@@ -3,19 +3,19 @@ package config
 
 import "reflect" 
 
-type Github struct {
+type Githubenterprise struct {
+	InstanceUrl string `mapstructure:"instance-url"`
 	Token string `mapstructure:"token"`
 	Orgs []string `mapstructure:"orgs"`
-	Enterprises []string `mapstructure:"enterprises"`
-	InstanceUrl string `mapstructure:"instance-url"`
-	SyncSecrets bool `mapstructure:"sync-secrets"`
-	OmitArchivedRepositories bool `mapstructure:"omit-archived-repositories"`
 	AppId string `mapstructure:"app-id"`
 	AppPrivatekeyPath []byte `mapstructure:"app-privatekey-path"`
 	Org string `mapstructure:"org"`
+	Enterprises []string `mapstructure:"enterprises"`
+	SyncSecrets bool `mapstructure:"sync-secrets"`
+	OmitArchivedRepositories bool `mapstructure:"omit-archived-repositories"`
 }
 
-func (c *Github) findFieldByTag(tagValue string) (any, bool) {
+func (c *Githubenterprise) findFieldByTag(tagValue string) (any, bool) {
 	v := reflect.ValueOf(c).Elem() // Dereference pointer to struct
 	t := v.Type()
 
@@ -30,7 +30,7 @@ func (c *Github) findFieldByTag(tagValue string) (any, bool) {
 	return nil, false
 }
 
-func (c *Github) GetStringSlice(fieldName string) []string {
+func (c *Githubenterprise) GetStringSlice(fieldName string) []string {
 	v, ok := c.findFieldByTag(fieldName)
 	if !ok {
 		return []string{}
@@ -42,7 +42,7 @@ func (c *Github) GetStringSlice(fieldName string) []string {
 	return t
 }
 
-func (c *Github) GetString(fieldName string) string {
+func (c *Githubenterprise) GetString(fieldName string) string {
 	v, ok := c.findFieldByTag(fieldName)
 	if !ok {
 		return ""
@@ -56,7 +56,7 @@ func (c *Github) GetString(fieldName string) string {
 	panic("wrong type")
 }
 
-func (c *Github) GetInt(fieldName string) int {
+func (c *Githubenterprise) GetInt(fieldName string) int {
 	v, ok := c.findFieldByTag(fieldName)
 	if !ok {
 		return 0
@@ -68,7 +68,7 @@ func (c *Github) GetInt(fieldName string) int {
 	return t
 }
 
-func (c *Github) GetBool(fieldName string) bool {
+func (c *Githubenterprise) GetBool(fieldName string) bool {
 	v, ok := c.findFieldByTag(fieldName)
 	if !ok {
 		return false
@@ -80,7 +80,7 @@ func (c *Github) GetBool(fieldName string) bool {
 	return t
 }
 
-func (c *Github) GetStringMap(fieldName string) map[string]any {
+func (c *Githubenterprise) GetStringMap(fieldName string) map[string]any {
 	v, ok := c.findFieldByTag(fieldName)
 	if !ok {
 		return map[string]any{}

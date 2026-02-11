@@ -81,8 +81,8 @@ var Config = field.NewConfiguration(
 		syncSecrets,
 		omitArchivedRepositories,
 	},
-	field.WithConnectorDisplayName("GitHub v2"),
-	field.WithHelpUrl("/docs/baton/github-v2"),
+	field.WithConnectorDisplayName("GitHub Enterprise"),
+	field.WithHelpUrl("/docs/baton/github-enterprise"),
 	field.WithIconUrl("/static/app-icons/github.svg"),
 	field.WithFieldGroups([]field.SchemaFieldGroup{
 		{
