@@ -30,6 +30,7 @@ jobs:
       - name: Run and save capabilities output
         env:
           BATON_TOKEN: test
+          BATON_INSTANCE_URL: test
         run: ./connector --sync-secrets capabilities > baton_capabilities.json
 
       - name: Commit changes
