@@ -1,0 +1,213 @@
+{
+  "fields": [
+    {
+      "name": "log-level",
+      "description": "The log level: debug, info, warn, error",
+      "isOps": true,
+      "stringField": {
+        "defaultValue": "info"
+      }
+    },
+    {
+      "name": "log-level-debug-expires-at",
+      "description": "The timestamp indicating when debug-level logging should expire",
+      "isOps": true,
+      "stringField": {}
+    },
+    {
+      "name": "session-store-maximum-size",
+      "description": "The maximum size of the local in-memory session store cache in bytes.",
+      "isOps": true,
+      "intField": {
+        "defaultValue": "15728640"
+      }
+    },
+    {
+      "name": "otel-collector-endpoint",
+      "description": "The endpoint of the OpenTelemetry collector to send observability data to (used for both tracing and logging if specific endpoints are not provided)",
+      "isOps": true,
+      "stringField": {}
+    },
+    {
+      "name": "otel-collector-endpoint-tls-cert-path",
+      "description": "Path to a file containing a PEM-encoded certificate to use as a CA for TLS connections to the OpenTelemetry collector",
+      "isOps": true,
+      "stringField": {}
+    },
+    {
+      "name": "otel-collector-endpoint-tls-cert",
+      "description": "A PEM-encoded certificate to use as a CA for TLS connections to the OpenTelemetry collector",
+      "isOps": true,
+      "stringField": {}
+    },
+    {
+      "name": "otel-collector-endpoint-tls-insecure",
+      "description": "Allow insecure connections to the OpenTelemetry collector",
+      "isOps": true,
+      "boolField": {}
+    },
+    {
+      "name": "otel-tracing-disabled",
+      "description": "Disable OpenTelemetry tracing",
+      "isOps": true,
+      "boolField": {}
+    },
+    {
+      "name": "otel-logging-disabled",
+      "description": "Disable OpenTelemetry logging",
+      "isOps": true,
+      "boolField": {}
+    },
+    {
+      "name": "health-check",
+      "description": "Enable the HTTP health check endpoint",
+      "isOps": true,
+      "boolField": {}
+    },
+    {
+      "name": "health-check-port",
+      "description": "Port for the HTTP health check endpoint",
+      "isOps": true,
+      "intField": {
+        "defaultValue": "8081"
+      }
+    },
+    {
+      "name": "health-check-bind-address",
+      "description": "Bind address for health check server (127.0.0.1 for localhost-only)",
+      "isOps": true,
+      "stringField": {
+        "defaultValue": "127.0.0.1"
+      }
+    },
+    {
+      "name": "http-timeout-seconds",
+      "description": "HTTP client timeout in seconds (max 1800)",
+      "isOps": true,
+      "intField": {
+        "defaultValue": "300",
+        "rules": {
+          "lte": "1800",
+          "gte": "1"
+        }
+      }
+    },
+    {
+      "name": "instance-url",
+      "displayName": "GitHub instance URL",
+      "description": "The GitHub instance URL to connect to. (default \"https://github.com\")",
+      "isRequired": true,
+      "stringField": {
+        "rules": {
+          "isRequired": true
+        }
+      }
+    },
+    {
+      "name": "token",
+      "displayName": "Personal access token",
+      "description": "The GitHub access token used to connect to the GitHub API.",
+      "isRequired": true,
+      "isSecret": true,
+      "stringField": {
+        "rules": {
+          "isRequired": true
+        }
+      }
+    },
+    {
+      "name": "orgs",
+      "displayName": "Organizations",
+      "description": "Limit syncing to specific organizations.",
+      "stringSliceField": {}
+    },
+    {
+      "name": "app-id",
+      "displayName": "GitHub App ID",
+      "description": "The GitHub App to connect to.",
+      "isRequired": true,
+      "stringField": {
+        "rules": {
+          "isRequired": true
+        }
+      }
+    },
+    {
+      "name": "app-privatekey-path",
+      "displayName": "GitHub App private key (.pem)",
+      "description": "Path to private key that is used to connect to the GitHub App",
+      "isRequired": true,
+      "isSecret": true,
+      "stringField": {
+        "rules": {
+          "isRequired": true
+        },
+        "type": "STRING_FIELD_TYPE_FILE_UPLOAD",
+        "allowedExtensions": [
+          ".pem"
+        ]
+      }
+    },
+    {
+      "name": "org",
+      "displayName": "Github App Organization",
+      "description": "Organization of your github app",
+      "isRequired": true,
+      "stringField": {
+        "rules": {
+          "isRequired": true
+        }
+      }
+    },
+    {
+      "name": "enterprises",
+      "displayName": "Enterprises",
+      "description": "Sync enterprise roles, must be an admin of the enterprise.",
+      "stringSliceField": {}
+    },
+    {
+      "name": "sync-secrets",
+      "displayName": "Sync secrets",
+      "description": "Whether to sync secrets or not",
+      "boolField": {}
+    },
+    {
+      "name": "omit-archived-repositories",
+      "displayName": "Omit syncing archived repositories",
+      "description": "Whether to skip syncing archived repositories or not",
+      "boolField": {}
+    }
+  ],
+  "displayName": "GitHub Enterprise",
+  "helpUrl": "/docs/baton/github-enterprise",
+  "iconUrl": "/static/app-icons/github.svg",
+  "fieldGroups": [
+    {
+      "name": "personal-access-token-group",
+      "displayName": "Personal access token",
+      "helpText": "Use a personal access token for authentication.",
+      "fields": [
+        "instance-url",
+        "token",
+        "orgs",
+        "enterprises",
+        "omit-archived-repositories"
+      ],
+      "default": true
+    },
+    {
+      "name": "github-app-group",
+      "displayName": "GitHub app",
+      "helpText": "Use a github app for authentication",
+      "fields": [
+        "instance-url",
+        "app-id",
+        "app-privatekey-path",
+        "org",
+        "enterprises",
+        "sync-secrets",
+        "omit-archived-repositories"
+      ]
+    }
+  ]
+}
