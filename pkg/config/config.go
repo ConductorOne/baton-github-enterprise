@@ -7,6 +7,7 @@ import (
 const (
 	GithubAppGroup                 = "github-app-group"
 	GithubPersonalAccessTokenGroup = "personal-access-token-group"
+	defaultGithubUrl               = "https://github.com"
 )
 
 var (
@@ -31,6 +32,7 @@ var (
 		"instance-url",
 		field.WithDisplayName("GitHub instance URL"),
 		field.WithDescription(`The GitHub instance URL to connect to. (default "https://github.com")`),
+		field.WithDefaultValue(defaultGithubUrl),
 		field.WithRequired(true),
 	)
 	appIDField = field.StringField(
