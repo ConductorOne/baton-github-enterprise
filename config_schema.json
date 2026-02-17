@@ -98,6 +98,7 @@
       "description": "The GitHub instance URL to connect to. (default \"https://github.com\")",
       "isRequired": true,
       "stringField": {
+        "defaultValue": "https://github.com",
         "rules": {
           "isRequired": true
         }
