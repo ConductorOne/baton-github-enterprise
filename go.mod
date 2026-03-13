@@ -3,10 +3,10 @@ module github.com/conductorone/baton-github-enterprise
 go 1.25.2
 
 require (
-	github.com/conductorone/baton-github v0.2.7
+	github.com/conductorone/baton-github v0.2.9
 	github.com/conductorone/baton-sdk v0.8.10
 	github.com/ennyjfrick/ruleguard-logfatal v0.0.2
-	github.com/quasilyte/go-ruleguard/dsl v0.3.22
+	github.com/quasilyte/go-ruleguard/dsl v0.3.23
 )
 
 require (
