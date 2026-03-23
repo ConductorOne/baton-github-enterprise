@@ -5,7 +5,8 @@ jobs:
     runs-on: ubuntu-latest
     env:
       BATON_TOKEN: ${{ secrets.BATON_TOKEN }}
-      BATON_ENTERPRISES: benTest
+      BATON_ENTERPRISES: mevans-test
+      BATON_ORGS: mevans-test-org1
       BATON_INSTANCE_URL: https://github.com
     steps:
       - name: Checkout code
@@ -20,6 +21,6 @@ jobs:
         uses: ConductorOne/github-workflows/actions/sync-test@v2
         with:
           connector: ./baton-github-enterprise
-          baton-entitlement: 'repository:1155802013:maintain'
-          baton-principal: '203686556'
+          baton-entitlement: 'org_role:8132:assigned'
+          baton-principal: '268751836'
           baton-principal-type: 'user'
