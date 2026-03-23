@@ -100,6 +100,7 @@ Use "baton-github-enterprise [command] --help" for more information about a comm
 To use this Baton connector, you need to create a GitHub organization access token with the following permissions:
 
 Org:
+- Administration: Read-only (required to detect SAML/SSO configuration)
 - Member Read and Write
 
 Repo:
