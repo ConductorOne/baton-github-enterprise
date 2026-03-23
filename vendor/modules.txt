@@ -162,7 +162,7 @@ github.com/cenkalti/backoff/v5
 # github.com/cespare/xxhash/v2 v2.3.0
 ## explicit; go 1.11
 github.com/cespare/xxhash/v2
-# github.com/conductorone/baton-github v0.2.7
+# github.com/conductorone/baton-github v0.2.11-0.20260323164405-3e91aad1c4d7
 ## explicit; go 1.25.2
 github.com/conductorone/baton-github/pkg/config
 github.com/conductorone/baton-github/pkg/connector
@@ -401,7 +401,7 @@ github.com/pquerna/xjwt
 # github.com/pquerna/xjwt/xkeyset v0.0.0-20241217022915-10fc997b2a9f
 ## explicit; go 1.23
 github.com/pquerna/xjwt/xkeyset
-# github.com/quasilyte/go-ruleguard/dsl v0.3.22
+# github.com/quasilyte/go-ruleguard/dsl v0.3.23
 ## explicit; go 1.15
 github.com/quasilyte/go-ruleguard/dsl
 github.com/quasilyte/go-ruleguard/dsl/types
