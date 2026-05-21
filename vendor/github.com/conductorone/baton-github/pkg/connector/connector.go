@@ -44,18 +44,18 @@ var (
 	resourceTypeOrg = &v2.ResourceType{
 		Id:          "org",
 		DisplayName: "Org",
-		Annotations: v1AnnotationsForResourceType("org"),
+		Annotations: skipEntitlementsAnnotations("org"),
 	}
 	resourceTypeTeam = &v2.ResourceType{
 		Id:          "team",
 		DisplayName: "Team",
 		Traits:      []v2.ResourceType_Trait{v2.ResourceType_TRAIT_GROUP},
-		Annotations: v1AnnotationsForResourceType("team"),
+		Annotations: skipEntitlementsAnnotations("team"),
 	}
 	resourceTypeRepository = &v2.ResourceType{
 		Id:          "repository",
 		DisplayName: "Repository",
-		Annotations: v1AnnotationsForResourceType("repository"),
+		Annotations: skipEntitlementsAnnotations("repository"),
 	}
 	resourceTypeUser = &v2.ResourceType{
 		Id:          "user",
@@ -68,6 +68,8 @@ var (
 	resourceTypeInvitation = &v2.ResourceType{
 		Id:          "invitation",
 		DisplayName: "Invitation",
+		// Invitations emit TRAIT_USER with UserTrait_Status_STATUS_UNSPECIFIED.
+		// Accepted members from user.go emit STATUS_ENABLED.
 		Traits: []v2.ResourceType_Trait{
 			v2.ResourceType_TRAIT_USER,
 		},
@@ -83,35 +85,36 @@ var (
 		Id:          "org_role",
 		DisplayName: "Organization Role",
 		Traits:      []v2.ResourceType_Trait{v2.ResourceType_TRAIT_ROLE},
-		Annotations: v1AnnotationsForResourceType("org_role"),
+		Annotations: skipEntitlementsAnnotations("org_role"),
 	}
 	resourceTypeEnterpriseRole = &v2.ResourceType{
 		Id:          "enterprise_role",
 		DisplayName: "Enterprise Role",
 		Traits:      []v2.ResourceType_Trait{v2.ResourceType_TRAIT_ROLE},
-		Annotations: v1AnnotationsForResourceType("enterprise_role"),
+		Annotations: skipEntitlementsAnnotations("enterprise_role"),
 	}
 )
 
 type GitHub struct {
-	orgs                        []string
-	client                      *github.Client
-	appClient                   *github.Client
-	customClient                *customclient.Client
-	instanceURL                 string
-	graphqlClient               *githubv4.Client
-	orgCache                    *orgNameCache
-	syncSecrets                 bool
-	omitArchivedRepositories    bool
-	enterprises                 []string
+	orgs                     []string
+	client                   *github.Client
+	appClient                *github.Client
+	customClient             *customclient.Client
+	instanceURL              string
+	graphqlClient            *githubv4.Client
+	orgCache                 *orgNameCache
+	syncSecrets              bool
+	omitArchivedRepositories bool
+	directCollaboratorsOnly  bool
+	enterprises              []string
 }
 
 func (gh *GitHub) ResourceSyncers(ctx context.Context) []connectorbuilder.ResourceSyncerV2 {
 	resourceSyncers := []connectorbuilder.ResourceSyncerV2{
 		orgBuilder(gh.client, gh.appClient, gh.orgCache, gh.orgs, gh.syncSecrets),
-		teamBuilder(gh.client, gh.orgCache),
+		teamBuilder(gh.client, gh.orgCache, gh.directCollaboratorsOnly),
 		userBuilder(gh.client, gh.graphqlClient, gh.orgCache, gh.orgs, gh.customClient, gh.enterprises),
-		repositoryBuilder(gh.client, gh.orgCache, gh.omitArchivedRepositories),
+		repositoryBuilder(gh.client, gh.orgCache, gh.omitArchivedRepositories, gh.directCollaboratorsOnly),
 		orgRoleBuilder(gh.client, gh.orgCache),
 		invitationBuilder(invitationBuilderParams{
 			client:   gh.client,
@@ -155,6 +158,16 @@ func (gh *GitHub) Metadata(ctx context.Context) (*v2.ConnectorMetadata, error) {
 					},
 					Placeholder: "organization name",
 					Order:       2,
+				},
+				"github_username": {
+					DisplayName: "GitHub username",
+					Required:    false,
+					Description: "The user's GitHub username (optional, used to look up the user if email is private).",
+					Field: &v2.ConnectorAccountCreationSchema_Field_StringField{
+						StringField: &v2.ConnectorAccountCreationSchema_StringField{},
+					},
+					Placeholder: "octocat",
+					Order:       3,
 				},
 			},
 		},
@@ -308,6 +321,7 @@ func newWithGithubPAT(ctx context.Context, ghc *cfg.Github) (*GitHub, error) {
 		orgCache:                 newOrgNameCache(ghClient),
 		syncSecrets:              ghc.SyncSecrets,
 		omitArchivedRepositories: ghc.OmitArchivedRepositories,
+		directCollaboratorsOnly:  ghc.DirectCollaboratorsOnly,
 	}, nil
 }
 
@@ -388,32 +402,36 @@ func newWithGithubApp(ctx context.Context, ghc *cfg.Github) (*GitHub, error) {
 		orgCache:                 newOrgNameCache(ghClient),
 		syncSecrets:              ghc.SyncSecrets,
 		omitArchivedRepositories: ghc.OmitArchivedRepositories,
+		directCollaboratorsOnly:  ghc.DirectCollaboratorsOnly,
 	}
 	return gh, nil
 }
 
 func newGitHubGraphqlClient(ctx context.Context, instanceURL string, ts oauth2.TokenSource) (*githubv4.Client, error) {
+	instanceURL = strings.TrimSuffix(instanceURL, "/")
+
+	var enterpriseGqlURL string
+	if instanceURL != "" && instanceURL != githubDotCom {
+		parsed, err := url.Parse(instanceURL)
+		if err != nil {
+			return nil, err
+		}
+		parsed.Path = "/api/graphql"
+		enterpriseGqlURL = parsed.String()
+	}
+
 	httpClient, err := uhttp.NewClient(ctx, uhttp.WithLogger(true, ctxzap.Extract(ctx)))
 	if err != nil {
 		return nil, err
 	}
+	httpClient.Transport = &statusClassifyingTransport{base: httpClient.Transport}
 
 	ctx = context.WithValue(ctx, oauth2.HTTPClient, httpClient)
-
 	tc := oauth2.NewClient(ctx, ts)
 
-	instanceURL = strings.TrimSuffix(instanceURL, "/")
-	if instanceURL != "" && instanceURL != githubDotCom {
-		gqlURL, err := url.Parse(instanceURL)
-		if err != nil {
-			return nil, err
-		}
-
-		gqlURL.Path = "/api/graphql"
-
-		return githubv4.NewEnterpriseClient(gqlURL.String(), tc), nil
+	if enterpriseGqlURL != "" {
+		return githubv4.NewEnterpriseClient(enterpriseGqlURL, tc), nil
 	}
-
 	return githubv4.NewClient(tc), nil
 }
 
