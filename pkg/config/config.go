@@ -67,6 +67,14 @@ var (
 		field.WithDescription("Organization of your github app"),
 		field.WithRequired(true),
 	)
+	directCollaboratorsOnly = field.BoolField(
+		"direct-collaborators-only",
+		field.WithDisplayName("Optimize sync for large organizations"),
+		field.WithDescription(
+			"Reduces API calls by using grant expansion for team-based repo access "+
+				"and skipping per-team detail fetches. Recommended for large orgs.",
+		),
+	)
 )
 
 //go:generate go run ./gen
@@ -81,6 +89,7 @@ var Config = field.NewConfiguration(
 		EnterprisesField,
 		syncSecrets,
 		omitArchivedRepositories,
+		directCollaboratorsOnly,
 	},
 	field.WithConnectorDisplayName("GitHub Enterprise"),
 	field.WithHelpUrl("/docs/baton/github-enterprise"),
@@ -90,14 +99,14 @@ var Config = field.NewConfiguration(
 			Name:        GithubPersonalAccessTokenGroup,
 			DisplayName: "Personal access token",
 			HelpText:    "Use a personal access token for authentication.",
-			Fields:      []field.SchemaField{instanceUrlField, accessTokenField, orgsField, EnterprisesField, omitArchivedRepositories},
+			Fields:      []field.SchemaField{instanceUrlField, accessTokenField, orgsField, EnterprisesField, omitArchivedRepositories, directCollaboratorsOnly},
 			Default:     true,
 		},
 		{
 			Name:        GithubAppGroup,
 			DisplayName: "GitHub app",
 			HelpText:    "Use a github app for authentication",
-			Fields:      []field.SchemaField{instanceUrlField, appIDField, appPrivateKeyPath, orgField, EnterprisesField, syncSecrets, omitArchivedRepositories},
+			Fields:      []field.SchemaField{instanceUrlField, appIDField, appPrivateKeyPath, orgField, EnterprisesField, syncSecrets, omitArchivedRepositories, directCollaboratorsOnly},
 			Default:     false,
 		},
 	}),
