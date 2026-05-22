@@ -30,6 +30,9 @@
           {
             "@type": "type.googleapis.com/c1.connector.v2.V1Identifier",
             "id": "org"
+          },
+          {
+            "@type": "type.googleapis.com/c1.connector.v2.SkipEntitlements"
           }
         ]
       },
@@ -50,6 +53,9 @@
           {
             "@type": "type.googleapis.com/c1.connector.v2.V1Identifier",
             "id": "org_role"
+          },
+          {
+            "@type": "type.googleapis.com/c1.connector.v2.SkipEntitlements"
           }
         ]
       },
@@ -67,6 +73,9 @@
           {
             "@type": "type.googleapis.com/c1.connector.v2.V1Identifier",
             "id": "repository"
+          },
+          {
+            "@type": "type.googleapis.com/c1.connector.v2.SkipEntitlements"
           }
         ]
       },
@@ -87,6 +96,9 @@
           {
             "@type": "type.googleapis.com/c1.connector.v2.V1Identifier",
             "id": "team"
+          },
+          {
+            "@type": "type.googleapis.com/c1.connector.v2.SkipEntitlements"
           }
         ]
       },

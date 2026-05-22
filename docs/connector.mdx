@@ -237,6 +237,8 @@ If you're using a personal access token to set up the connector:
    1. **Optional.** If you want to sync roles for only some enterprises, add the names of the enterprises in the **Enterprises to sync enterprise roles for** field.
 
    1. **Optional.** If you do not want to include archived repos in syncs, click to enable **Omit archived repositories**.
+
+   1. **Optional.** For large organizations, click to enable **Optimize sync for large organizations**. This reduces API calls by using grant expansion for team-based repo access and skipping per-team detail fetches.
 </Step>
 <Step>
 If you're using a GitHub app to set up the connector:
@@ -254,6 +256,8 @@ If you're using a GitHub app to set up the connector:
    1. **Optional.** If you want to sync roles for only some enterprises, add the names of the enterprises in the **Enterprises to sync enterprise roles for** field.
 
    1. **Optional.** If you do not want to include archived repos in syncs, click to enable **Omit archived repositories**.
+
+   1. **Optional.** For large organizations, click to enable **Optimize sync for large organizations**. This reduces API calls by using grant expansion for team-based repo access and skipping per-team detail fetches.
 </Step>
 <Step>
 Click **Save**.
@@ -346,6 +350,7 @@ baton-github-enterprise \
 | :--- | :--- |
 | `--enterprises` | Comma-separated list of enterprises to sync enterprise roles for. |
 | `--omit-archived-repositories` | Exclude archived repositories from syncs. |
+| `--direct-collaborators-only` | Optimize sync for large organizations by reducing API calls (uses grant expansion for team-based repo access and skips per-team detail fetches). |
 | `--provisioning` | Enable provisioning and deprovisioning. |
 </Step>
 <Step>

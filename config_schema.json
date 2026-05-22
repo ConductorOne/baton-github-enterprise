@@ -177,6 +177,12 @@
       "displayName": "Omit syncing archived repositories",
       "description": "Whether to skip syncing archived repositories or not",
       "boolField": {}
+    },
+    {
+      "name": "direct-collaborators-only",
+      "displayName": "Optimize sync for large organizations",
+      "description": "Reduces API calls by using grant expansion for team-based repo access and skipping per-team detail fetches. Recommended for large orgs.",
+      "boolField": {}
     }
   ],
   "displayName": "GitHub Enterprise",
@@ -192,7 +198,8 @@
         "token",
         "orgs",
         "enterprises",
-        "omit-archived-repositories"
+        "omit-archived-repositories",
+        "direct-collaborators-only"
       ],
       "default": true
     },
@@ -207,7 +214,8 @@
         "org",
         "enterprises",
         "sync-secrets",
-        "omit-archived-repositories"
+        "omit-archived-repositories",
+        "direct-collaborators-only"
       ]
     }
   ]
