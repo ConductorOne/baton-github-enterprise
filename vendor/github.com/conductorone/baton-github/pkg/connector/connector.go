@@ -361,7 +361,10 @@ func newWithGithubApp(ctx context.Context, ghc *cfg.Github) (*GitHub, error) {
 			privateKey: string(ghc.AppPrivatekeyPath),
 		},
 	)
-	ts := oauth2.ReuseTokenSource(
+	// Wrap the installation-token refresher in a refreshableTokenSource so the
+	// 401-retry middleware can mark the cached token dead when GitHub rotates
+	// it server-side before its stated Expiry.
+	ts := newRefreshableTokenSource(
 		&oauth2.Token{
 			AccessToken: token.GetToken(),
 			Expiry:      token.GetExpiresAt().Time,
@@ -382,11 +385,14 @@ func newWithGithubApp(ctx context.Context, ghc *cfg.Github) (*GitHub, error) {
 		return nil, err
 	}
 
-	ghClient, err := newGitHubClient(ctx, ghc.InstanceUrl, ts)
+	// Build the layered HTTP client for the installation-token path. The
+	// tokenRefreshTransport observes 401s, invalidates ts, and retries once
+	// with the freshly-issued installation token.
+	appHTTPClient, err := newGitHubAppHTTPClient(ctx, ts)
 	if err != nil {
 		return nil, err
 	}
-	graphqlClient, err := newGitHubGraphqlClient(ctx, ghc.InstanceUrl, ts)
+	ghClient, graphqlClient, err := newGitHubAppClients(ghc.InstanceUrl, appHTTPClient)
 	if err != nil {
 		return nil, err
 	}
