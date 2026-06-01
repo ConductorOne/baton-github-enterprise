@@ -313,6 +313,7 @@ baton-github-enterprise
 | `BATON_ORGS` | Comma-separated list of organizations to sync. If not set, all organizations are synced. |
 | `BATON_ENTERPRISES` | Comma-separated list of enterprises to sync enterprise roles for. |
 | `BATON_OMIT_ARCHIVED_REPOSITORIES` | Set to `true` to exclude archived repositories from syncs. |
+| `BATON_DIRECT_COLLABORATORS_ONLY` | Set to `true` to optimize sync for large organizations by reducing API calls (uses grant expansion for team-based repo access and skips per-team detail fetches). |
 | `BATON_PROVISIONING` | Set to `true` to enable provisioning and deprovisioning. |
 | `BATON_SYNC_SECRETS` | Set to `true` to sync secrets (API keys). |
 </Step>
