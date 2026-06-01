@@ -93,6 +93,18 @@ var (
 		Traits:      []v2.ResourceType_Trait{v2.ResourceType_TRAIT_ROLE},
 		Annotations: skipEntitlementsAnnotations("enterprise_role"),
 	}
+	resourceTypeLicense = &v2.ResourceType{
+		Id:          "license",
+		DisplayName: "License",
+		Traits:      []v2.ResourceType_Trait{v2.ResourceType_TRAIT_LICENSE_PROFILE},
+		Annotations: annotations.New(
+			&v2.V1Identifier{
+				Id: "license",
+			},
+			&v2.SkipEntitlements{},
+			&v2.OptInRequired{},
+		),
+	}
 )
 
 type GitHub struct {
@@ -111,12 +123,12 @@ type GitHub struct {
 
 func (gh *GitHub) ResourceSyncers(ctx context.Context) []connectorbuilder.ResourceSyncerV2 {
 	resourceSyncers := []connectorbuilder.ResourceSyncerV2{
-		orgBuilder(gh.client, gh.appClient, gh.orgCache, gh.orgs, gh.syncSecrets),
-		teamBuilder(gh.client, gh.orgCache, gh.directCollaboratorsOnly),
-		userBuilder(gh.client, gh.graphqlClient, gh.orgCache, gh.orgs, gh.customClient, gh.enterprises),
-		repositoryBuilder(gh.client, gh.orgCache, gh.omitArchivedRepositories, gh.directCollaboratorsOnly),
-		orgRoleBuilder(gh.client, gh.orgCache),
-		invitationBuilder(invitationBuilderParams{
+		OrgBuilder(gh.client, gh.appClient, gh.orgCache, gh.orgs, gh.syncSecrets),
+		TeamBuilder(gh.client, gh.orgCache, gh.directCollaboratorsOnly),
+		UserBuilder(gh.client, gh.graphqlClient, gh.orgCache, gh.orgs, gh.customClient, gh.enterprises),
+		RepositoryBuilder(gh.client, gh.orgCache, gh.omitArchivedRepositories, gh.directCollaboratorsOnly),
+		OrgRoleBuilder(gh.client, gh.orgCache),
+		InvitationBuilder(InvitationBuilderParams{
 			client:   gh.client,
 			orgCache: gh.orgCache,
 			orgs:     gh.orgs,
@@ -124,11 +136,14 @@ func (gh *GitHub) ResourceSyncers(ctx context.Context) []connectorbuilder.Resour
 	}
 
 	if gh.syncSecrets {
-		resourceSyncers = append(resourceSyncers, apiTokenBuilder(gh.client, gh.orgCache))
+		resourceSyncers = append(resourceSyncers, APITokenBuilder(gh.client, gh.orgCache))
 	}
 
 	if len(gh.enterprises) > 0 {
-		resourceSyncers = append(resourceSyncers, enterpriseRoleBuilder(gh.client, gh.appClient, gh.customClient, gh.enterprises))
+		resourceSyncers = append(resourceSyncers,
+			EnterpriseRoleBuilder(gh.client, gh.appClient, gh.customClient, gh.enterprises),
+			LicenseBuilder(gh.customClient, gh.enterprises),
+		)
 	}
 	return resourceSyncers
 }

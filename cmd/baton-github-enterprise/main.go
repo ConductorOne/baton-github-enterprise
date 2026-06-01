@@ -4,7 +4,6 @@ import (
 	"context"
 
 	cfg "github.com/conductorone/baton-github-enterprise/pkg/config"
-	githubConnector "github.com/conductorone/baton-github/pkg/connector"
 	"github.com/conductorone/baton-sdk/pkg/config"
 	"github.com/conductorone/baton-sdk/pkg/connectorrunner"
 
@@ -21,6 +20,6 @@ func main() {
 		cfg.Config,
 		connector.NewLambdaConnector,
 		connectorrunner.WithSessionStoreEnabled(),
-		connectorrunner.WithDefaultCapabilitiesConnectorBuilderV2(&githubConnector.GitHub{}),
+		connectorrunner.WithDefaultCapabilitiesConnectorBuilderV2(connector.DefaultCapabilitiesBuilder()),
 	)
 }
