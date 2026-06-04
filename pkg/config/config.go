@@ -75,6 +75,24 @@ var (
 				"and skipping per-team detail fetches. Recommended for large orgs.",
 		),
 	)
+	accountCreationModeField = field.StringField(
+		"account-creation-mode",
+		field.WithDisplayName("Account creation mode"),
+		field.WithDescription(
+			`How the connector creates accounts. "invitation" (default) sends an org `+
+				`invitation email. "site_admin_create" calls POST /admin/users using a `+
+				`site-admin PAT, bypassing email invitations (GHES only).`,
+		),
+	)
+	siteAdminTokenField = field.StringField(
+		"site-admin-token",
+		field.WithDisplayName("Site-admin personal access token"),
+		field.WithDescription(
+			"A GHES site-admin PAT used for account creation when account-creation-mode "+
+				"is site_admin_create. This token requires site-admin privilege on the GHES instance.",
+		),
+		field.WithIsSecret(true),
+	)
 )
 
 //go:generate go run ./gen
@@ -90,6 +108,8 @@ var Config = field.NewConfiguration(
 		syncSecrets,
 		omitArchivedRepositories,
 		directCollaboratorsOnly,
+		accountCreationModeField,
+		siteAdminTokenField,
 	},
 	field.WithConnectorDisplayName("GitHub Enterprise"),
 	field.WithHelpUrl("/docs/baton/github-enterprise"),
@@ -99,14 +119,14 @@ var Config = field.NewConfiguration(
 			Name:        GithubPersonalAccessTokenGroup,
 			DisplayName: "Personal access token",
 			HelpText:    "Use a personal access token for authentication.",
-			Fields:      []field.SchemaField{instanceUrlField, accessTokenField, orgsField, EnterprisesField, omitArchivedRepositories, directCollaboratorsOnly},
+			Fields:      []field.SchemaField{instanceUrlField, accessTokenField, orgsField, EnterprisesField, omitArchivedRepositories, directCollaboratorsOnly, accountCreationModeField, siteAdminTokenField},
 			Default:     true,
 		},
 		{
 			Name:        GithubAppGroup,
 			DisplayName: "GitHub app",
 			HelpText:    "Use a github app for authentication",
-			Fields:      []field.SchemaField{instanceUrlField, appIDField, appPrivateKeyPath, orgField, EnterprisesField, syncSecrets, omitArchivedRepositories, directCollaboratorsOnly},
+			Fields:      []field.SchemaField{instanceUrlField, appIDField, appPrivateKeyPath, orgField, EnterprisesField, syncSecrets, omitArchivedRepositories, directCollaboratorsOnly, accountCreationModeField, siteAdminTokenField},
 			Default:     false,
 		},
 	}),
