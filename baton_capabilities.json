@@ -21,6 +21,42 @@
     },
     {
       "resourceType": {
+        "id": "app",
+        "displayName": "GitHub App",
+        "traits": [
+          "TRAIT_APP"
+        ],
+        "annotations": [
+          {
+            "@type": "type.googleapis.com/c1.connector.v2.V1Identifier",
+            "id": "app"
+          },
+          {
+            "@type": "type.googleapis.com/c1.connector.v2.CapabilityPermissions",
+            "permissions": [
+              {
+                "permission": "organization_administration:read"
+              }
+            ]
+          },
+          {
+            "@type": "type.googleapis.com/c1.connector.v2.SkipEntitlementsAndGrants"
+          }
+        ]
+      },
+      "capabilities": [
+        "CAPABILITY_SYNC"
+      ],
+      "permissions": {
+        "permissions": [
+          {
+            "permission": "organization_administration:read"
+          }
+        ]
+      }
+    },
+    {
+      "resourceType": {
         "id": "enterprise_role",
         "displayName": "Enterprise Role",
         "traits": [
@@ -52,6 +88,9 @@
           {
             "@type": "type.googleapis.com/c1.connector.v2.V1Identifier",
             "id": "invitation"
+          },
+          {
+            "@type": "type.googleapis.com/c1.connector.v2.SkipSyncAnomalyDetection"
           }
         ]
       },
@@ -60,7 +99,8 @@
         "CAPABILITY_ACCOUNT_PROVISIONING",
         "CAPABILITY_RESOURCE_DELETE"
       ],
-      "permissions": {}
+      "permissions": {},
+      "skipSyncAnomalyDetection": true
     },
     {
       "resourceType": {
