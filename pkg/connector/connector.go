@@ -52,5 +52,6 @@ func (d *defaultCapabilitiesBuilder) ResourceSyncers(_ context.Context) []connec
 		connector.APITokenBuilder(nil, nil),
 		connector.EnterpriseRoleBuilder(nil, nil, nil, nil),
 		connector.LicenseBuilder(nil, nil),
+		connector.AppBuilder(nil, nil),
 	}
 }

@@ -73,7 +73,9 @@ var (
 		Traits: []v2.ResourceType_Trait{
 			v2.ResourceType_TRAIT_USER,
 		},
-		Annotations: v1AnnotationsForResourceType("invitation"),
+		// Invitations disappear once accepted, so their count can legitimately
+		// drop between syncs. Skip sync anomaly detection for this type only.
+		Annotations: append(v1AnnotationsForResourceType("invitation"), annotations.New(&v2.SkipSyncAnomalyDetection{})...),
 	}
 	resourceTypeApiToken = &v2.ResourceType{
 		Id:          "api-key",
@@ -105,6 +107,12 @@ var (
 			&v2.OptInRequired{},
 		),
 	}
+	resourceTypeApp = &v2.ResourceType{
+		Id:          "app",
+		DisplayName: "GitHub App",
+		Traits:      []v2.ResourceType_Trait{v2.ResourceType_TRAIT_APP},
+		Annotations: skipEntitlementsAndGrantsAnnotations("app", "organization_administration:read"),
+	}
 )
 
 type GitHub struct {
@@ -133,6 +141,7 @@ func (gh *GitHub) ResourceSyncers(ctx context.Context) []connectorbuilder.Resour
 			orgCache: gh.orgCache,
 			orgs:     gh.orgs,
 		}),
+		AppBuilder(gh.client, gh.orgCache),
 	}
 
 	if gh.syncSecrets {
