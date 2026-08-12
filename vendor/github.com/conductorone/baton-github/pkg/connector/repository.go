@@ -31,12 +31,32 @@ const (
 	repoPermissionAdmin    = "admin"
 )
 
+const readConst = "read"
+
 var repoAccessLevels = []string{
 	repoPermissionPull,
 	repoPermissionTriage,
 	repoPermissionPush,
 	repoPermissionMaintain,
 	repoPermissionAdmin,
+}
+
+// roleNameToRepoPermission maps a role returned by the "get repository
+// permissions for a user" API (read/triage/write/maintain/admin) to the
+// permission vocabulary used by repository entitlements
+// (pull/triage/push/maintain/admin). Returns "" for custom repository
+// roles it does not recognize.
+func roleNameToRepoPermission(roleName string) string {
+	switch roleName {
+	case readConst:
+		return repoPermissionPull
+	case "write":
+		return repoPermissionPush
+	case repoPermissionTriage, repoPermissionMaintain, repoPermissionAdmin:
+		return roleName
+	default:
+		return ""
+	}
 }
 
 // repositoryResource returns a new connector resource for a GitHub repository.
@@ -389,6 +409,43 @@ func (o *repositoryResourceType) Grant(ctx context.Context, principal *v2.Resour
 			return nil, wrapGitHubError(err, resp, "github-connector: failed to get user")
 		}
 
+		collaborator, resp, err := o.client.Repositories.IsCollaborator(ctx, repo.GetOwner().GetLogin(), repo.GetName(), user.GetLogin())
+		if err != nil {
+			return nil, wrapGitHubError(err, resp, "github-connector: failed to check if user is a collaborator")
+		}
+
+		var replacedGrantID string
+		if collaborator {
+			permLevel, resp, err := o.client.Repositories.GetPermissionLevel(ctx, repo.GetOwner().GetLogin(), repo.GetName(), user.GetLogin())
+			if err != nil {
+				return nil, wrapGitHubError(err, resp, "github-connector: failed to get user's repository permission")
+			}
+
+			prevPermission := roleNameToRepoPermission(permLevel.GetRoleName())
+			if prevPermission == "" {
+				// Custom repository role: fall back to the coarse permission (read/write/admin).
+				prevPermission = roleNameToRepoPermission(permLevel.GetPermission())
+			}
+
+			switch prevPermission {
+			case permission:
+				return annotations.New(&v2.GrantAlreadyExists{}), nil
+			case "":
+				l.Warn(
+					"github-connectorv2: unrecognized existing repository role, granting without GrantReplaced annotation",
+					zap.String("role_name", permLevel.GetRoleName()),
+					zap.String("permission", permLevel.GetPermission()),
+				)
+			default:
+				// AddCollaborator overwrites the user's existing role, so report the
+				// old role's grant as replaced. GitHub permissions are cumulative;
+				// grants for other implied flags are reconciled at the next sync.
+				replacedGrantID = grant.NewGrantID(principal, &v2.Entitlement{
+					Id: entitlement.NewEntitlementID(en.Resource, prevPermission),
+				})
+			}
+		}
+
 		_, resp, er := o.client.Repositories.AddCollaborator(
 			ctx,
 			repo.GetOwner().GetLogin(),
@@ -399,6 +456,10 @@ func (o *repositoryResourceType) Grant(ctx context.Context, principal *v2.Resour
 
 		if er != nil {
 			return nil, wrapGitHubError(er, resp, "github-connector: failed to add user to repository")
+		}
+
+		if replacedGrantID != "" {
+			return annotations.New(&v2.GrantReplaced{ReplacedGrantId: replacedGrantID}), nil
 		}
 	case resourceTypeTeam.Id:
 		team, resp, err := o.client.Teams.GetTeamByID(ctx, org.GetID(), principalID) //nolint:staticcheck,nolintlint // TODO: migrate to GetTeamBySlug
@@ -487,7 +548,14 @@ func orgBasePermissionSessionKey(orgID string) string {
 
 // getOrgBasePermission fetches the org's default_repository_permission, caching in the session.
 // Returns "read", "write", "admin", or "none".
+//
+// An empty/absent field is treated as "none" (fail closed). GitHub only returns
+// default_repository_permission to org owners / tokens with admin:org (or the
+// GitHub App Organization Administration permission). An omitted field means
+// "unknown", not GitHub's create-org default of "read" — assuming "read" would
+// invent pull grants for every org member on every repo.
 func (o *repositoryResourceType) getOrgBasePermission(ctx context.Context, ss sessions.SessionStore, orgName string, orgResourceID *v2.ResourceId) (string, error) {
+	l := ctxzap.Extract(ctx)
 	key := orgBasePermissionSessionKey(orgResourceID.Resource)
 	cached, found, err := session.GetJSON[string](ctx, ss, key)
 	if err != nil {
@@ -504,7 +572,13 @@ func (o *repositoryResourceType) getOrgBasePermission(ctx context.Context, ss se
 
 	perm := org.GetDefaultRepoPermission()
 	if perm == "" {
-		perm = "read" // GitHub default
+		l.Debug(
+			"baton-github: org default_repository_permission missing or empty; skipping org-member repo expansion (treating as none). "+
+				"Grant the credential org-owner visibility (admin:org / Organization Administration) to sync base-permission grants accurately.",
+			zap.String("org", orgName),
+			zap.String("org_id", orgResourceID.Resource),
+		)
+		perm = "none"
 	}
 
 	if err := session.SetJSON(ctx, ss, key, perm); err != nil {
@@ -521,7 +595,7 @@ func orgBasePermissionToRepoPermissions(basePerm string) []string {
 		return []string{repoPermissionPull, repoPermissionTriage, repoPermissionPush, repoPermissionMaintain, repoPermissionAdmin}
 	case "write":
 		return []string{repoPermissionPull, repoPermissionTriage, repoPermissionPush}
-	case "read":
+	case readConst:
 		return []string{repoPermissionPull}
 	default:
 		return nil
