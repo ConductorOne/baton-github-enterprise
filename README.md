@@ -22,7 +22,7 @@ baton resources
 ## docker
 
 ```
-docker run --rm -v $(pwd):/out -e BATON_TOKEN=githubAccessToken ghcr.io/conductorone/baton-github-enterprise:latest -f "/out/sync.c1z"
+docker run --rm -v $(pwd):/out -e BATON_TOKEN=githubAccessToken public.ecr.aws/conductorone/baton-github-enterprise:latest -f "/out/sync.c1z"
 docker run --rm -v $(pwd):/out ghcr.io/conductorone/baton:latest -f "/out/sync.c1z" resources
 ```
 
