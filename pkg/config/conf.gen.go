@@ -14,6 +14,7 @@ type Githubenterprise struct {
 	SyncSecrets bool `mapstructure:"sync-secrets"`
 	OmitArchivedRepositories bool `mapstructure:"omit-archived-repositories"`
 	DirectCollaboratorsOnly bool `mapstructure:"direct-collaborators-only"`
+	SyncLastActivity bool `mapstructure:"sync-last-activity"`
 }
 
 func (c *Githubenterprise) findFieldByTag(tagValue string) (any, bool) {

@@ -127,6 +127,7 @@ type GitHub struct {
 	omitArchivedRepositories bool
 	directCollaboratorsOnly  bool
 	enterprises              []string
+	syncLastActivity         bool
 }
 
 func (gh *GitHub) ResourceSyncers(ctx context.Context) []connectorbuilder.ResourceSyncerV2 {
@@ -157,8 +158,18 @@ func (gh *GitHub) ResourceSyncers(ctx context.Context) []connectorbuilder.Resour
 	return resourceSyncers
 }
 
+func (gh *GitHub) EventFeeds(_ context.Context) []connectorbuilder.EventFeed {
+	if !gh.syncLastActivity {
+		return nil
+	}
+
+	return []connectorbuilder.EventFeed{
+		newUsageEventFeed(gh.client, gh.orgs),
+	}
+}
+
 // Metadata returns metadata about the connector.
-func (gh *GitHub) Metadata(ctx context.Context) (*v2.ConnectorMetadata, error) {
+func (gh *GitHub) Metadata(_ context.Context) (*v2.ConnectorMetadata, error) {
 	return &v2.ConnectorMetadata{
 		DisplayName: "GitHub",
 		AccountCreationSchema: &v2.ConnectorAccountCreationSchema{
@@ -346,11 +357,31 @@ func newWithGithubPAT(ctx context.Context, ghc *cfg.Github) (*GitHub, error) {
 		syncSecrets:              ghc.SyncSecrets,
 		omitArchivedRepositories: ghc.OmitArchivedRepositories,
 		directCollaboratorsOnly:  ghc.DirectCollaboratorsOnly,
+		syncLastActivity:         ghc.SyncLastActivity,
 	}, nil
 }
 
+// appPrivateKeyPEM returns the GitHub App private key PEM contents to use,
+// preferring the in-memory app-privatekey flag over the on-disk
+// app-privatekey-path. Providing either one satisfies the requirement; if
+// neither is set an error is returned.
+func appPrivateKeyPEM(ghc *cfg.Github) (string, error) {
+	if ghc.AppPrivatekey != "" {
+		return ghc.AppPrivatekey, nil
+	}
+	if len(ghc.AppPrivatekeyPath) > 0 {
+		return string(ghc.AppPrivatekeyPath), nil
+	}
+	return "", errors.New("github app authentication requires either --app-privatekey or --app-privatekey-path")
+}
+
 func newWithGithubApp(ctx context.Context, ghc *cfg.Github) (*GitHub, error) {
-	jwttoken, err := getJWTToken(ghc.AppId, string(ghc.AppPrivatekeyPath))
+	privateKey, err := appPrivateKeyPEM(ghc)
+	if err != nil {
+		return nil, err
+	}
+
+	jwttoken, err := getJWTToken(ghc.AppId, privateKey)
 	if err != nil {
 		return nil, err
 	}
@@ -382,7 +413,7 @@ func newWithGithubApp(ctx context.Context, ghc *cfg.Github) (*GitHub, error) {
 		},
 		&appJWTTokenRefresher{
 			appID:      ghc.AppId,
-			privateKey: string(ghc.AppPrivatekeyPath),
+			privateKey: privateKey,
 		},
 	)
 	// Wrap the installation-token refresher in a refreshableTokenSource so the
@@ -433,6 +464,7 @@ func newWithGithubApp(ctx context.Context, ghc *cfg.Github) (*GitHub, error) {
 		syncSecrets:              ghc.SyncSecrets,
 		omitArchivedRepositories: ghc.OmitArchivedRepositories,
 		directCollaboratorsOnly:  ghc.DirectCollaboratorsOnly,
+		syncLastActivity:         ghc.SyncLastActivity,
 	}
 	return gh, nil
 }

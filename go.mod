@@ -2,6 +2,8 @@ module github.com/conductorone/baton-github-enterprise
 
 go 1.25.2
 
+replace github.com/conductorone/baton-github => ../baton-github
+
 require (
 	github.com/conductorone/baton-github v0.4.0
 	github.com/conductorone/baton-sdk v0.26.0

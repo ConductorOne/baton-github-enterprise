@@ -183,6 +183,12 @@
       "displayName": "Optimize sync for large organizations",
       "description": "Reduces API calls by using grant expansion for team-based repo access and skipping per-team detail fetches. Recommended for large orgs.",
       "boolField": {}
+    },
+    {
+      "name": "sync-last-activity",
+      "displayName": "Sync user last activity",
+      "description": "See when members were last active in your organizations.",
+      "boolField": {}
     }
   ],
   "displayName": "GitHub Enterprise",
@@ -199,7 +205,8 @@
         "orgs",
         "enterprises",
         "omit-archived-repositories",
-        "direct-collaborators-only"
+        "direct-collaborators-only",
+        "sync-last-activity"
       ],
       "default": true
     },
@@ -215,7 +222,8 @@
         "enterprises",
         "sync-secrets",
         "omit-archived-repositories",
-        "direct-collaborators-only"
+        "direct-collaborators-only",
+        "sync-last-activity"
       ]
     }
   ]

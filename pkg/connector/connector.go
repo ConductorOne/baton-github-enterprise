@@ -24,6 +24,7 @@ func NewLambdaConnector(ctx context.Context, ghc *cfg.Githubenterprise, cliOpts 
 		AppPrivatekeyPath:        ghc.AppPrivatekeyPath,
 		Org:                      ghc.Org,
 		DirectCollaboratorsOnly:  ghc.DirectCollaboratorsOnly,
+		SyncLastActivity:         ghc.SyncLastActivity,
 	}, cliOpts)
 }
 

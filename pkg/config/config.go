@@ -75,6 +75,12 @@ var (
 				"and skipping per-team detail fetches. Recommended for large orgs.",
 		),
 	)
+
+	syncLastActivity = field.BoolField(
+		"sync-last-activity",
+		field.WithDisplayName("Sync user last activity"),
+		field.WithDescription("See when members were last active in your organizations."),
+	)
 )
 
 //go:generate go run ./gen
@@ -90,6 +96,7 @@ var Config = field.NewConfiguration(
 		syncSecrets,
 		omitArchivedRepositories,
 		directCollaboratorsOnly,
+		syncLastActivity,
 	},
 	field.WithConnectorDisplayName("GitHub Enterprise"),
 	field.WithHelpUrl("/docs/baton/github-enterprise"),
@@ -99,14 +106,14 @@ var Config = field.NewConfiguration(
 			Name:        GithubPersonalAccessTokenGroup,
 			DisplayName: "Personal access token",
 			HelpText:    "Use a personal access token for authentication.",
-			Fields:      []field.SchemaField{instanceUrlField, accessTokenField, orgsField, EnterprisesField, omitArchivedRepositories, directCollaboratorsOnly},
+			Fields:      []field.SchemaField{instanceUrlField, accessTokenField, orgsField, EnterprisesField, omitArchivedRepositories, directCollaboratorsOnly, syncLastActivity},
 			Default:     true,
 		},
 		{
 			Name:        GithubAppGroup,
 			DisplayName: "GitHub app",
 			HelpText:    "Use a github app for authentication",
-			Fields:      []field.SchemaField{instanceUrlField, appIDField, appPrivateKeyPath, orgField, EnterprisesField, syncSecrets, omitArchivedRepositories, directCollaboratorsOnly},
+			Fields:      []field.SchemaField{instanceUrlField, appIDField, appPrivateKeyPath, orgField, EnterprisesField, syncSecrets, omitArchivedRepositories, directCollaboratorsOnly, syncLastActivity},
 			Default:     false,
 		},
 	}),
