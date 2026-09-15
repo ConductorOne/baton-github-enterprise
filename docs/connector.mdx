@@ -394,8 +394,8 @@ You can enable **Sync last activity** to have C1 show, for each member, the last
 
 **Requirements:**
 
-- The personal access token used by the connector must have the **read:audit_log** scope.
-- The token must have permission to view each organization's audit log (typically an organization owner).
+- **Personal access token:** the token must have the **read:audit_log** scope, and permission to view each organization's audit log (typically an organization owner).
+- **GitHub App:** the app must have the **Organization permissions > Administration: Read-only access** permission. If you followed the GitHub App setup instructions above, this is already granted (it's also required for SAML/SSO detection), so no extra permission needs to be added.
 
 <Warning>
 **Enabling the config option alone is not enough.** After you enable **Sync last activity** (or set `--sync-last-activity` / `BATON_SYNC_LAST_ACTIVITY=true`) and save the connector, go to the connector's **Capabilities & configuration** page in C1 and confirm the **GitHub Activity** resource type is enabled for sync.
