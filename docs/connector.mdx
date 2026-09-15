@@ -244,7 +244,7 @@ If you're using a personal access token to set up the connector:
 
    1. **Optional.** For large organizations, click to enable **Optimize sync for large organizations**. This reduces API calls by using grant expansion for team-based repo access and skipping per-team detail fetches.
 
-   1. **Optional.** If you want to see when members were last active, click to enable **Sync last activity**. See [Sync member last activity](#sync-member-last-activity) for requirements and limitations.
+   1. **Optional.** If you want to see when members were last active, click to enable **Sync user last activity**. See [Sync member last activity](#sync-member-last-activity) for requirements and limitations.
 </Step>
 <Step>
 If you're using a GitHub app to set up the connector:
@@ -265,7 +265,7 @@ If you're using a GitHub app to set up the connector:
 
    1. **Optional.** For large organizations, click to enable **Optimize sync for large organizations**. This reduces API calls by using grant expansion for team-based repo access and skipping per-team detail fetches.
 
-   1. **Optional.** If you want to see when members were last active, click to enable **Sync last activity**. See [Sync member last activity](#sync-member-last-activity) for requirements and limitations.
+   1. **Optional.** If you want to see when members were last active, click to enable **Sync user last activity**. See [Sync member last activity](#sync-member-last-activity) for requirements and limitations.
 </Step>
 <Step>
 Click **Save**.
@@ -390,7 +390,7 @@ When deploying on Kubernetes with a minimal base image (for example, Debian slim
 
 ## Sync member last activity
 
-You can enable **Sync last activity** to have C1 show, for each member, the last time they were seen taking action in that organization (for example, commenting on an issue or pull request, reviewing code, or changing a setting). This appears on the member's profile in C1 alongside their other access details.
+You can enable **Sync user last activity** to have C1 show, for each member, the last time they were seen taking action in that organization (for example, commenting on an issue or pull request, reviewing code, or changing a setting). This appears on the member's profile in C1 alongside their other access details.
 
 **Requirements:**
 
@@ -398,7 +398,7 @@ You can enable **Sync last activity** to have C1 show, for each member, the last
 - **GitHub App:** the app must have the **Organization permissions > Administration: Read-only access** permission. If you followed the GitHub App setup instructions above, this is already granted (it's also required for SAML/SSO detection), so no extra permission needs to be added.
 
 <Warning>
-**Enabling the config option alone is not enough.** After you enable **Sync last activity** (or set `--sync-last-activity` / `BATON_SYNC_LAST_ACTIVITY=true`) and save the connector, go to the connector's **Capabilities & configuration** page in C1 and confirm the **GitHub Activity** resource type is enabled for sync.
+**Enabling the config option alone is not enough.** After you enable **Sync user last activity** (or set `--sync-last-activity` / `BATON_SYNC_LAST_ACTIVITY=true`) and save the connector, go to the connector's **Capabilities & configuration** page in C1 and confirm the **GitHub Activity** resource type is enabled for sync.
 
 - On a **brand-new** connector, this resource type is included by default, so no extra step is needed.
 - On an **existing, already-configured** connector, C1 does not automatically add a newly-available resource type to a previously saved sync selection — it will show up in the resource list as available, but disabled, until you manually enable it.
