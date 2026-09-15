@@ -400,6 +400,14 @@ You can enable **Sync last activity** to have C1 show, for each member, the last
 - The personal access token used by the connector must have the **read:audit_log** scope.
 - The token must have permission to view each organization's audit log (typically an organization owner).
 
+<Warning>
+**Enabling the config option alone is not enough.** After you enable **Sync last activity** (or set `--sync-last-activity` / `BATON_SYNC_LAST_ACTIVITY=true`) and save the connector, go to the connector's **Capabilities & configuration** page in C1 and confirm the **GitHub Activity** resource type is enabled for sync.
+
+- On a **brand-new** connector, this resource type is included by default, so no extra step is needed.
+- On an **existing, already-configured** connector, C1 does not automatically add a newly-available resource type to a previously saved sync selection — it will show up in the resource list as available, but disabled, until you manually enable it.
+
+</Warning>
+
 **What "last activity" means:** This is not necessarily a login timestamp. GitHub's audit log only records actions members take, not every time someone signs in or browses the product. Because of this, C1 shows the most recent recorded action for a member, whatever that action was, as a best-effort signal of when they were last active. A member who only reads or browses without taking any recorded action won't show a last-activity date, even if they use GitHub regularly.
 
 To keep this fast on large organizations, raw Git operations (pushes, fetches, and clones done via `git` rather than the website or API) are not counted toward last activity — only web and API actions are. A member who exclusively interacts with GitHub through `git` and never uses the website or API (for example, a purely command-line workflow with no PR reviews, comments, or settings changes) won't show a last-activity date, even though they're actively using GitHub.
