@@ -1,13 +1,11 @@
 package pebble
 
 import (
-	"bufio"
 	"bytes"
 	"context"
 	"encoding/binary"
 	"errors"
 	"fmt"
-	"os"
 	"path/filepath"
 	"runtime"
 	"time"
@@ -285,13 +283,18 @@ func (f *grantDigestFold) closePartition() error {
 
 // finish closes the last partition, writes the whole-file global root
 // (the fold of every partition this build touched — see globalXor/
-// globalTotal), and commits the tail batch. The global root lands in
-// the same final batch as the last partition's nodes, so it is never
-// visible without them: a crash between batches can only leave the
-// global root ABSENT, never present ahead of a partition it should
-// have folded in.
+// globalTotal) plus the ABI stamp certifying which hash version
+// computed it (rawdb.GrantDigestABIStampKey — the fold's opening
+// DeleteRange erased any prior stamp), and commits the tail batch. The
+// global root and stamp land in the same final batch as the last
+// partition's nodes, so neither is ever visible without them: a crash
+// between batches can only leave them ABSENT, never present ahead of a
+// partition the root should have folded in.
 func (f *grantDigestFold) finish() error {
 	if err := f.closePartition(); err != nil {
+		return err
+	}
+	if err := f.batch.Set(rawdb.GrantDigestABIStampKey(), grantDigestABIStampValue()); err != nil {
 		return err
 	}
 	if err := f.batch.Set(rawdb.GlobalGrantDigestNodeKey(), packDigestLeaf(f.globalTotal, f.globalXor[:])); err != nil {
@@ -345,30 +348,19 @@ func splitGrantHashIndexKey(key []byte) ([]byte, uint16, bool) {
 func mergeGrantHashChunksToSST(ctx context.Context, fs vfs.FS, sstPath, name string, chunks []string, fold *grantDigestFold) error {
 	start := time.Now()
 	l := ctxzap.Extract(ctx)
-	readers := make([]*os.File, 0, len(chunks))
-	defer func() {
-		for _, r := range readers {
-			_ = r.Close()
-		}
-	}()
-	bufReaders := make([]*bufio.Reader, len(chunks))
-	keyBufs := make([][]byte, len(chunks))
-	valBufs := make([][]byte, len(chunks))
+	cursors, err := openSpillChunks(chunks)
+	if err != nil {
+		return err
+	}
+	defer cursors.closeAll()
 	h := &spillChunkHeap{}
-	var lenBuf [4]byte
-	for i, chunk := range chunks {
-		f, err := os.Open(chunk) // #nosec G304 - staged under the build's MkdirTemp dir.
-		if err != nil {
-			return err
-		}
-		readers = append(readers, f)
-		bufReaders[i] = bufio.NewReaderSize(f, bulkSpillBufferSize)
-		ok, err := readSpillEntry(bufReaders[i], &keyBufs[i], &valBufs[i], &lenBuf)
+	for i := range chunks {
+		ok, err := cursors.advance(i)
 		if err != nil {
 			return err
 		}
 		if ok {
-			h.push(spillChunkItem{chunkIdx: i, key: keyBufs[i], val: valBufs[i]})
+			h.push(spillChunkItem{chunkIdx: i, key: cursors.key(i), val: cursors.val(i)})
 		}
 	}
 
@@ -389,7 +381,7 @@ func mergeGrantHashChunksToSST(ctx context.Context, fs vfs.FS, sstPath, name str
 	for len(*h) > 0 {
 		item := h.pop()
 		if bytes.Equal(item.key, last) {
-			return fmt.Errorf("%w: bucket %s key %x", errBulkImportDuplicateKey, name, item.key)
+			return fmt.Errorf("%w: bucket %s key %x", ErrBulkImportDuplicateKey, name, item.key)
 		}
 		partition, bucket, ok := splitGrantHashIndexKey(item.key)
 		if !ok {
@@ -419,12 +411,12 @@ func mergeGrantHashChunksToSST(ctx context.Context, fs vfs.FS, sstPath, name str
 			}
 		}
 		last = append(last[:0], item.key...)
-		ok, err := readSpillEntry(bufReaders[item.chunkIdx], &keyBufs[item.chunkIdx], &valBufs[item.chunkIdx], &lenBuf)
+		ok, err := cursors.advance(item.chunkIdx)
 		if err != nil {
 			return err
 		}
 		if ok {
-			h.push(spillChunkItem{chunkIdx: item.chunkIdx, key: keyBufs[item.chunkIdx], val: valBufs[item.chunkIdx]})
+			h.push(spillChunkItem{chunkIdx: item.chunkIdx, key: cursors.key(item.chunkIdx), val: cursors.val(item.chunkIdx)})
 		}
 	}
 	if err := writer.finish(); err != nil {
@@ -487,7 +479,12 @@ func (e *Engine) buildGrantDigestsFromSpill(ctx context.Context, dir string, has
 		}
 		// Zero grants still means the digest WAS built (present-means-
 		// exact — an absent global root would tell a manifest reader to
-		// recalculate instead of trusting "nothing to diff").
+		// recalculate instead of trusting "nothing to diff"). The ABI
+		// stamp precedes the root: WAL prefix ordering then guarantees a
+		// durable root is never uncertified.
+		if err := e.db.DigestSet(rawdb.GrantDigestABIStampKey(), grantDigestABIStampValue(), opts); err != nil {
+			return err
+		}
 		if err := e.db.DigestSet(rawdb.GlobalGrantDigestNodeKey(), packDigestLeaf(0, zeroDigest[:]), opts); err != nil {
 			return err
 		}
