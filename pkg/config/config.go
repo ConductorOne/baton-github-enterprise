@@ -79,7 +79,7 @@ var (
 	syncLastActivity = field.BoolField(
 		"sync-last-activity",
 		field.WithDisplayName("Sync user last activity"),
-		field.WithDescription("See when members were last active in your organizations."),
+		field.WithDescription("See when members were last active in your organizations, based on audit-log activity."),
 	)
 )
 

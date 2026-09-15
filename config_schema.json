@@ -187,7 +187,7 @@
     {
       "name": "sync-last-activity",
       "displayName": "Sync user last activity",
-      "description": "See when members were last active in your organizations.",
+      "description": "See when members were last active in your organizations, based on audit-log activity.",
       "boolField": {}
     }
   ],
