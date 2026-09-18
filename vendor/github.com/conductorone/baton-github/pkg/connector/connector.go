@@ -68,7 +68,7 @@ var (
 	resourceTypeInvitation = &v2.ResourceType{
 		Id:          "invitation",
 		DisplayName: "Invitation",
-		// Invitations emit TRAIT_USER with UserTrait_Status_STATUS_UNSPECIFIED.
+		// Invitations emit TRAIT_USER with STATUS_PENDING.
 		// Accepted members from user.go emit STATUS_ENABLED.
 		Traits: []v2.ResourceType_Trait{
 			v2.ResourceType_TRAIT_USER,
@@ -127,6 +127,7 @@ type GitHub struct {
 	omitArchivedRepositories bool
 	directCollaboratorsOnly  bool
 	enterprises              []string
+	syncLastActivity         bool
 }
 
 func (gh *GitHub) ResourceSyncers(ctx context.Context) []connectorbuilder.ResourceSyncerV2 {
@@ -148,6 +149,11 @@ func (gh *GitHub) ResourceSyncers(ctx context.Context) []connectorbuilder.Resour
 		resourceSyncers = append(resourceSyncers, APITokenBuilder(gh.client, gh.orgCache))
 	}
 
+	if gh.syncLastActivity {
+		// usageAppBuilder only exists to support usageEventFeed, so it's gated the same way.
+		resourceSyncers = append(resourceSyncers, newUsageAppBuilder())
+	}
+
 	if len(gh.enterprises) > 0 {
 		resourceSyncers = append(resourceSyncers,
 			EnterpriseRoleBuilder(gh.client, gh.appClient, gh.customClient, gh.enterprises),
@@ -157,8 +163,18 @@ func (gh *GitHub) ResourceSyncers(ctx context.Context) []connectorbuilder.Resour
 	return resourceSyncers
 }
 
+func (gh *GitHub) EventFeeds(_ context.Context) []connectorbuilder.EventFeed {
+	if !gh.syncLastActivity {
+		return nil
+	}
+
+	return []connectorbuilder.EventFeed{
+		newUsageEventFeed(gh.client, gh.orgs),
+	}
+}
+
 // Metadata returns metadata about the connector.
-func (gh *GitHub) Metadata(ctx context.Context) (*v2.ConnectorMetadata, error) {
+func (gh *GitHub) Metadata(_ context.Context) (*v2.ConnectorMetadata, error) {
 	return &v2.ConnectorMetadata{
 		DisplayName: "GitHub",
 		AccountCreationSchema: &v2.ConnectorAccountCreationSchema{
@@ -346,11 +362,31 @@ func newWithGithubPAT(ctx context.Context, ghc *cfg.Github) (*GitHub, error) {
 		syncSecrets:              ghc.SyncSecrets,
 		omitArchivedRepositories: ghc.OmitArchivedRepositories,
 		directCollaboratorsOnly:  ghc.DirectCollaboratorsOnly,
+		syncLastActivity:         ghc.SyncLastActivity,
 	}, nil
 }
 
+// appPrivateKeyPEM returns the GitHub App private key PEM contents to use,
+// preferring the in-memory app-privatekey flag over the on-disk
+// app-privatekey-path. Providing either one satisfies the requirement; if
+// neither is set an error is returned.
+func appPrivateKeyPEM(ghc *cfg.Github) (string, error) {
+	if ghc.AppPrivatekey != "" {
+		return ghc.AppPrivatekey, nil
+	}
+	if len(ghc.AppPrivatekeyPath) > 0 {
+		return string(ghc.AppPrivatekeyPath), nil
+	}
+	return "", errors.New("github app authentication requires either --app-privatekey or --app-privatekey-path")
+}
+
 func newWithGithubApp(ctx context.Context, ghc *cfg.Github) (*GitHub, error) {
-	jwttoken, err := getJWTToken(ghc.AppId, string(ghc.AppPrivatekeyPath))
+	privateKey, err := appPrivateKeyPEM(ghc)
+	if err != nil {
+		return nil, err
+	}
+
+	jwttoken, err := getJWTToken(ghc.AppId, privateKey)
 	if err != nil {
 		return nil, err
 	}
@@ -382,7 +418,7 @@ func newWithGithubApp(ctx context.Context, ghc *cfg.Github) (*GitHub, error) {
 		},
 		&appJWTTokenRefresher{
 			appID:      ghc.AppId,
-			privateKey: string(ghc.AppPrivatekeyPath),
+			privateKey: privateKey,
 		},
 	)
 	// Wrap the installation-token refresher in a refreshableTokenSource so the
@@ -433,6 +469,7 @@ func newWithGithubApp(ctx context.Context, ghc *cfg.Github) (*GitHub, error) {
 		syncSecrets:              ghc.SyncSecrets,
 		omitArchivedRepositories: ghc.OmitArchivedRepositories,
 		directCollaboratorsOnly:  ghc.DirectCollaboratorsOnly,
+		syncLastActivity:         ghc.SyncLastActivity,
 	}
 	return gh, nil
 }
@@ -465,7 +502,12 @@ func newGitHubGraphqlClient(ctx context.Context, instanceURL string, ts oauth2.T
 	return githubv4.NewClient(tc), nil
 }
 
+// escapedLineBreaks unescapes LF-, CRLF-, and CR-escaped line breaks (`\r\n`,
+// `\n`, `\r`) to a real newline.
+var escapedLineBreaks = strings.NewReplacer(`\r\n`, "\n", `\n`, "\n", `\r`, "\n")
+
 func loadPrivateKeyFromString(p string) (*rsa.PrivateKey, error) {
+	p = escapedLineBreaks.Replace(p)
 	block, _ := pem.Decode([]byte(p))
 	if block == nil || (block.Type != "PRIVATE KEY" && block.Type != "RSA PRIVATE KEY") {
 		return nil, errors.New("invalid private key PEM format")

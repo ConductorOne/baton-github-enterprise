@@ -92,6 +92,7 @@ Flags:
       --skip-full-sync                                   This must be set to skip a full sync ($BATON_SKIP_FULL_SYNC)
       --ticketing                                        This must be set to enable ticketing support ($BATON_TICKETING)
       --token string                                     required: The GitHub access token used to connect to the GitHub API. ($BATON_TOKEN)
+      --sync-last-activity                               See when members were last active in your organizations, based on audit-log activity. ($BATON_SYNC_LAST_ACTIVITY)
       --sync-secrets                                     Whether to sync secrets or not ($BATON_SYNC_SECRETS)
   -v, --version                                          version for baton-github-enterprise
 

@@ -64,10 +64,13 @@ func invitationToUserResource(invitation *github.Invitation, status string) (*v2
 		invitation.GetID(),
 		[]resourceSdk.UserTraitOption{
 			resourceSdk.WithEmail(invitation.GetEmail(), true),
-			resourceSdk.WithUserProfile(profile),
-			resourceSdk.WithStatus(v2.UserTrait_Status_STATUS_UNSPECIFIED),
 			resourceSdk.WithUserLogin(login),
 		},
+		// profile and status have moved from UserTrait to Resource-level
+		// attributes. Expired invitations stay PENDING - they are still not a
+		// usable account - and carry the distinction in the status details.
+		resourceSdk.WithResourceProfile(profile),
+		resourceSdk.WithResourceStatus(v2.Status_RESOURCE_STATUS_PENDING, status),
 	)
 	if err != nil {
 		return nil, err
