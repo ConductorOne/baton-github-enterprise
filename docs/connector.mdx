@@ -393,7 +393,7 @@ When deploying on Kubernetes with a minimal base image (for example, Debian slim
 
 ## Sync member last activity
 
-You can enable **Sync user last activity** to have C1 show, for each member, the most recent recorded action across all synced organizations (for example, commenting on an issue or pull request, reviewing code, or changing a setting). This appears on the member's profile in C1 alongside their other access details.
+You can enable **Sync user last activity** to have C1 show, for each member, the most recent recorded action across all synced organizations (for example, changing an organization or repository setting, creating or deleting a repository, or adding someone to a team). This appears on the member's profile in C1 alongside their other access details.
 
 **Requirements:**
 
@@ -407,7 +407,9 @@ You can enable **Sync user last activity** to have C1 show, for each member, the
 
 **What "last activity" means:** This is not necessarily a login timestamp. GitHub's audit log only records actions members take, not every time someone signs in or browses the product. Because of this, C1 shows the most recent recorded action for a member, whatever that action was, as a best-effort signal of when they were last active. A member who only reads or browses without taking any recorded action won't show a last-activity date, even if they use GitHub regularly.
 
-To keep this fast on large organizations, raw Git operations (pushes, fetches, and clones done via `git` rather than the website or API) are not counted toward last activity — only web and API actions are. A member who exclusively interacts with GitHub through `git` and never uses the website or API (for example, a purely command-line workflow with no PR reviews, comments, or settings changes) won't show a last-activity date, even though they're actively using GitHub.
+**What is not counted:** The organization audit log records administrative events, not content activity. Writing an issue or pull request comment and reviewing code are not recorded there, so neither produces a last-activity date. An organization whose members write and review code but administer nothing may therefore show no last-activity dates at all.
+
+To keep this fast on large organizations, raw Git operations (pushes, fetches, and clones done via `git` rather than the website or API) are not counted toward last activity — only web and API actions are. Combined with the point above, this means a member whose work is limited to writing and reviewing code won't show a last-activity date, even though they're actively using GitHub.
 
 If a member has never taken a recorded action, or if the connector can't reach an organization's audit log for any reason (for example, a missing scope or a plan without audit log access), C1 simply won't show a last-activity date for that member — this does not affect the rest of the sync.
 
