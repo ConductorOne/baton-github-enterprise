@@ -4,7 +4,7 @@ go 1.27.1
 
 require (
 	github.com/conductorone/baton-github v0.4.7
-	github.com/conductorone/baton-sdk v0.32.1
+	github.com/conductorone/baton-sdk v0.32.2
 	github.com/ennyjfrick/ruleguard-logfatal v0.0.2
 	github.com/quasilyte/go-ruleguard/dsl v0.3.23
 )
