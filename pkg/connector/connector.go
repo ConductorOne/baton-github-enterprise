@@ -42,6 +42,8 @@ func (d *defaultCapabilitiesBuilder) Validate(_ context.Context) (annotations.An
 	return nil, nil
 }
 
+// Includes enterprise role and license. baton-github omits both from its
+// published capabilities. The enterprise role is provisionable.
 func (d *defaultCapabilitiesBuilder) ResourceSyncers(_ context.Context) []connectorbuilder.ResourceSyncerV2 {
 	return []connectorbuilder.ResourceSyncerV2{
 		connector.OrgBuilder(nil, nil, nil, nil, false),
@@ -51,7 +53,7 @@ func (d *defaultCapabilitiesBuilder) ResourceSyncers(_ context.Context) []connec
 		connector.OrgRoleBuilder(nil, nil),
 		connector.InvitationBuilder(connector.InvitationBuilderParams{}),
 		connector.APITokenBuilder(nil, nil),
-		connector.EnterpriseRoleBuilder(nil, nil, nil, nil),
+		connector.EnterpriseRoleProvisioningBuilder(nil, nil, nil, nil),
 		connector.LicenseBuilder(nil, nil),
 		connector.AppBuilder(nil, nil),
 	}
