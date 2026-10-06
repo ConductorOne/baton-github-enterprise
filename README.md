@@ -44,6 +44,7 @@ baton resources
 - Users
 - Teams
 - Repositories
+- Enterprise roles, when `--enterprises` is set. With a GitHub App, the built-in Enterprise Owner role can also be granted and revoked.
 
 By default, `baton-github-enterprise` will sync information from any organizations that the provided credential has Administrator permissions on. You can specify exactly which organizations you would like to sync using the `--orgs` flag.
 
@@ -110,3 +111,7 @@ Org:
 Repo:
 - Administrator: Read and Write
   - This permission implies Metadata: Read
+
+Enterprise (GitHub App with `--enterprises` only):
+- Enterprise people: Read and Write
+  - The app must be installed on the enterprise account as well as on the organization. This is what syncs and provisions the built-in Enterprise Owner role.

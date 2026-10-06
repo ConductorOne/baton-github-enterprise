@@ -42,6 +42,11 @@ func (d *defaultCapabilitiesBuilder) Validate(_ context.Context) (annotations.An
 	return nil, nil
 }
 
+// ResourceSyncers lists what this connector publishes. Unlike baton-github,
+// whose published metadata describes an account without an enterprise, this
+// connector serves enterprise deployments, so the enterprise role and license
+// types are included. The enterprise role carries the provisioning capability
+// because a GitHub App grants and revokes the built-in Owner role.
 func (d *defaultCapabilitiesBuilder) ResourceSyncers(_ context.Context) []connectorbuilder.ResourceSyncerV2 {
 	return []connectorbuilder.ResourceSyncerV2{
 		connector.OrgBuilder(nil, nil, nil, nil, false),
@@ -51,7 +56,7 @@ func (d *defaultCapabilitiesBuilder) ResourceSyncers(_ context.Context) []connec
 		connector.OrgRoleBuilder(nil, nil),
 		connector.InvitationBuilder(connector.InvitationBuilderParams{}),
 		connector.APITokenBuilder(nil, nil),
-		connector.EnterpriseRoleBuilder(nil, nil, nil, nil),
+		connector.EnterpriseRoleProvisioningBuilder(nil, nil, nil, nil),
 		connector.LicenseBuilder(nil, nil),
 		connector.AppBuilder(nil, nil),
 	}
