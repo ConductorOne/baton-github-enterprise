@@ -7,9 +7,16 @@ sidebarTitle: "GitHub Enterprise"
 ---
 
 <Tip>
-**GitHub versus GitHub Enterprise: which integration should I use?** Follow the instructions on this page if your organization accesses GitHub at a custom domain.
+**GitHub versus GitHub Enterprise: which integration should I use?** The GitHub Enterprise connector works with both GitHub Enterprise Server (GHES) and GitHub Enterprise Cloud (GHEC).
 
-If you access GitHub at `github.com`, go to the [GitHub](/baton/github) integration.
+This connector offers capabilities that the [GitHub](/baton/github) connector does not:
+
+- Support for GitHub Enterprise Server
+- Enterprise roles, including provisioning of the built-in Enterprise Owner role
+- Licenses
+- Member last activity
+
+Choose this connector if you need any of these features, if you authenticate with a personal access token (classic), or if you authenticate with a GitHub App installed on a single organization.
 </Tip>
 
 ## Capabilities
@@ -27,7 +34,11 @@ If you access GitHub at `github.com`, go to the [GitHub](/baton/github) integrat
 | GitHub App | <Icon icon="square-check" iconType="solid"  color="#c937ae"/> |  |
 | GitHub Activity\*\*\* | <Icon icon="square-check" iconType="solid"  color="#c937ae"/> |  |
 
-The GitHub Enterprise connector supports [automatic account provisioning and deprovisioning](/product/admin/account-provisioning). New accounts will send an invitation to the account owner; if an invitation is pending, the account status will be shown as **Pending**. 
+The GitHub Enterprise connector supports [automatic account provisioning and deprovisioning](/product/admin/account-provisioning). New accounts will send an invitation to the account owner; if an invitation is pending, the account status will be shown as **Pending**.
+
+<Note>
+**Enterprise Managed Users (EMU):** C1 cannot create accounts in an organization that uses Enterprise Managed Users, because accounts in those organizations are provisioned by your identity provider. The invitation fails with an error stating that accounts are provisioned by the IdP. To create accounts for EMU users, use your identity provider's GitHub SCIM integration. The connector still syncs existing EMU users and governs their access, such as repositories, teams, and roles.
+</Note>
 
 \* Due to limitations on the GitHub API, syncing multiple orgs requires a personal access token (PAT). A separate connector and GitHub app is required when using the GitHub App integration.
 
@@ -57,7 +68,7 @@ Enterprise roles are a GitHub Enterprise Cloud feature. Setting **Enterprises** 
 
 ## Gather GitHub Enterprise credentials 
 
-Configuring the connector requires you to pass in credentials generated in GitHub Enterprise. Gather these credentials before you move on. To set up the GitHub Enterprise connector, you can choose to create either a personal access token (classic) or a fine-grained access token.
+Configuring the connector requires you to pass in credentials generated in GitHub Enterprise. Gather these credentials before you move on. To set up the GitHub Enterprise connector, you can choose to create either a personal access token (classic) or a GitHub App.
 
 ### Option 1: Use a personal access token (classic)
 
@@ -253,7 +264,7 @@ If you're using a personal access token to set up the connector:
 
    1. Click **Personal access token**.
 
-   1. In the **Instance URL** field, enter the URL of your GitHub Enterprise instance.
+   1. In the **Instance URL** field, enter the URL of your GitHub Enterprise instance. For GitHub Enterprise Cloud at `github.com`, enter `https://github.com` (the default). This field is required.
 
    1. Paste the token you generated into the **Personal access token** field.
 
@@ -272,7 +283,7 @@ If you're using a GitHub app to set up the connector:
 
    1. Click **GitHub app**.
 
-   1. In the **Instance URL** field, enter the URL of your GitHub Enterprise instance.
+   1. In the **Instance URL** field, enter the URL of your GitHub Enterprise instance. For GitHub Enterprise Cloud at `github.com`, enter `https://github.com` (the default). This field is required.
 
    1. Enter your app ID into the **GitHub app ID** field.
 
