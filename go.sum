@@ -82,8 +82,8 @@ github.com/cockroachdb/swiss v0.0.0-20260820225851-333444432258 h1:IJ+uNItEm0qx9
 github.com/cockroachdb/swiss v0.0.0-20260820225851-333444432258/go.mod h1:yBRu/cnL4ks9bgy4vAASdjIW+/xMlFwuHKqtmh3GZQg=
 github.com/cockroachdb/tokenbucket v0.0.0-20230807174530-cc333fc44b06 h1:zuQyyAKVxetITBuuhv3BI9cMrmStnpT18zmgmTxunpo=
 github.com/cockroachdb/tokenbucket v0.0.0-20230807174530-cc333fc44b06/go.mod h1:7nc4anLGjupUW/PeY5qiNYsdNXj7zopG+eqsS7To5IQ=
-github.com/conductorone/baton-github v0.4.8 h1:MnHJ52afdVDJGrfv5nINu7An2SoLjgMtDvA/ILLqLRo=
-github.com/conductorone/baton-github v0.4.8/go.mod h1:0J0AmiX5H3pW+jH807dSVAH2xcyXxv9Vlc2yE2l+rJg=
+github.com/conductorone/baton-github v0.5.6 h1:WgwuKlKay9Qsh9URHFRZYSU3es0gIKTa3NqMgEz6Mjc=
+github.com/conductorone/baton-github v0.5.6/go.mod h1:RYmCLOb9NQ48CiCMSEjZaeZRMTWA5mKMDXjPqxk8v9U=
 github.com/conductorone/baton-sdk v0.44.2 h1:PqJz43t6GBJgvfrNro/dYKxcSLpJb5yKb2C6h+/1BjQ=
 github.com/conductorone/baton-sdk v0.44.2/go.mod h1:6dD4CklwIB8OvOUW4W+FXtxp4BXwL7W7vxz6zVqnKBQ=
 github.com/conductorone/dpop v0.3.0 h1:j5fZk0VqepGKYo+/NDikCOMsZcgs4HO4i0k56wRel5g=
