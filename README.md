@@ -1,6 +1,6 @@
 # baton-github-enterprise
 
-![Baton Logo](./docs/images/baton-logo.png)
+![Baton Logo](./baton-logo.png)
 
 # `baton-github-enterprise` [![Go Reference](https://pkg.go.dev/badge/github.com/conductorone/baton-github.svg)](https://pkg.go.dev/github.com/conductorone/baton-github) ![ci](https://github.com/conductorone/baton-github/actions/workflows/ci.yaml/badge.svg) ![verify](https://github.com/conductorone/baton-github/actions/workflows/verify.yaml/badge.svg)
 
